@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:aop="http://www.springframework.org/schema/aop" xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	   xsi:schemaLocation="
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+	<!-- mode: ${mode} -->
+	<!--<aop:aspectj-autoproxy /> -->
+
+	<!--<import resource="simplesm-context.xml" />-->
+	<aop:aspectj-autoproxy />
+
+	<!--<bean name="defaultMemcachedClient" class="com.google.code.ssm.CacheFactory">-->
+		<!--<property name="cacheClientFactory">-->
+			<!--<bean class="com.google.code.ssm.providers.xmemcached.MemcacheClientFactoryImpl" />-->
+		<!--</property>-->
+		<!--<property name="addressProvider">-->
+			<!--<bean class="com.google.code.ssm.config.DefaultAddressProvider">-->
+				<!--<property name="address" value="127.0.0.1:11211" />-->
+			<!--</bean>-->
+		<!--</property>-->
+		<!--<property name="configuration">-->
+			<!--<bean class="com.google.code.ssm.providers.CacheConfiguration">-->
+				<!--<property name="consistentHashing" value="true" />-->
+				<!--<property name="useBinaryProtocol" value="true" />-->
+				<!--<property name="operationTimeout" value="2" />-->
+
+
+			<!--</bean>-->
+		<!--</property>-->
+	<!--</bean>-->
+	<bean name="memManager" class="com.baren.yak.xmem.XmemcachedManager">
+		<property name="servers">
+			<map>
+				<entry key="home" value="localhost:11211 localhost:11211" />
+				<entry key="base" value="localhost:11211" />
+				<entry key="default" value="localhost:11211" />
+			</map>
+		</property>
+	</bean>
+</beans>
