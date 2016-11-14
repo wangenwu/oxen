@@ -171,7 +171,6 @@ public class AvroNettyTransceiver extends Transceiver {
                 p.addLast("frameDecoder", new AvroNettyTransportCodec.NettyFrameDecoder());
                 p.addLast("frameEncoder", new AvroNettyTransportCodec.NettyFrameEncoder());
                 p.addLast("handler", createNettyClientAvroHandler());
-//                return p;
             }
         });
 
@@ -184,25 +183,26 @@ public class AvroNettyTransceiver extends Transceiver {
 
         }
 
-        // Make a new connection.
-        stateLock.readLock().lock();
-        try {
-            getChannel();
-        } catch (Throwable e) {
-            // must attempt to clean up any allocated channel future
-            if (channelFuture != null) {
-                channelFuture.channel().close();
-            }
-
-            if (e instanceof IOException)
-                throw (IOException)e;
-            if (e instanceof RuntimeException)
-                throw (RuntimeException)e;
-            // all that's left is Error
-            throw (Error)e;
-        } finally {
-            stateLock.readLock().unlock();
-        }
+        // 这里,采用延迟连接,所以注释掉,方便服务器预先启动成功,不然直接跑错了.
+//        // Make a new connection.
+//        stateLock.readLock().lock();
+//        try {
+//            getChannel();
+//        } catch (Throwable e) {
+//            // must attempt to clean up any allocated channel future
+//            if (channelFuture != null) {
+//                channelFuture.channel().close();
+//            }
+//
+//            if (e instanceof IOException)
+//                throw (IOException)e;
+//            if (e instanceof RuntimeException)
+//                throw (RuntimeException)e;
+//            // all that's left is Error
+//            throw (Error)e;
+//        } finally {
+//            stateLock.readLock().unlock();
+//        }
     }
 
     /**

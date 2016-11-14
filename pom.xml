@@ -10,6 +10,8 @@
       <module>oxen-rpc</module>
       <module>oxen-cache-demo</module>
       <module>oxen-rpc-demo</module>
+      <module>oxen-rpc-spring</module>
+      <module>oxen-rpc-spring-demo</module>
   </modules>
   <packaging>pom</packaging>
 

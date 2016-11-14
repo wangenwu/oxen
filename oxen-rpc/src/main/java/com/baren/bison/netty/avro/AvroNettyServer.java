@@ -9,6 +9,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.apache.avro.ipc.*;
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ public class AvroNettyServer implements Server {
     private final EventLoopGroup workerGroup;
 
     private final CountDownLatch closed = new CountDownLatch(1);
-    private final EventExecutor executionHandler;
+    private final EventExecutorGroup businessGroup;
 
     public AvroNettyServer(Responder responder, InetSocketAddress addr) throws IOException {
         this(responder, addr, new NioEventLoopGroup(), new NioEventLoopGroup());
@@ -45,24 +46,25 @@ public class AvroNettyServer implements Server {
 
     public AvroNettyServer(Responder responder, InetSocketAddress addr,
                            EventLoopGroup bossGroup, EventLoopGroup workerGroup) throws IOException {
-        this(responder, addr, bossGroup, workerGroup, null, null);
+        this(responder, addr, bossGroup, workerGroup, null);
     }
 
     /**
-     * @param executionHandler if not null, will be inserted into the Netty
+     * @param businessGroup if not null, will be inserted into the Netty
      *                         pipeline. Use this when your responder does
      *                         long, non-cpu bound processing (see Netty's
-     *                         ExecutionHandler javadoc).
+     *                         EventExecutorGroup javadoc).
      * @param bossGroup  workerGroup
      *
      */
     public AvroNettyServer(Responder responder, InetSocketAddress addr,
                        EventLoopGroup bossGroup, EventLoopGroup workerGroup,
-                       final EventExecutor executionHandler, Map<ChannelOption, Object> nettyClientBootstrapOptions) throws IOException {
+                           EventExecutorGroup businessGroup) throws IOException {
         this.responder = responder;
         this.bossGroup = bossGroup;
         this.workerGroup = workerGroup;
-        this.executionHandler = executionHandler;
+        this.businessGroup = businessGroup;
+//        EventExecutorGroup group = new DefaultEventExecutorGroup(16)
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
@@ -76,24 +78,24 @@ public class AvroNettyServer implements Server {
     //                        if (executionHandler != null) {
     //                            p.addLast(executionHandler, executionHandler);
     //                        }
-                            if (executionHandler != null) {
-                                p.addLast(executionHandler, "handler", new AvroNettyServer.NettyServerAvroHandler());
+                            if (businessGroup != null) {
+                                p.addLast(businessGroup, "handler", new AvroNettyServer.NettyServerAvroHandler());
                             } else {
                                 p.addLast("handler", new AvroNettyServer.NettyServerAvroHandler());
                             }
 
                         }
-                    });
-//            .option(ChannelOption.SO_BACKLOG, 128)
-//            .childOption(ChannelOption.SO_KEEPALIVE, true);
-            if (nettyClientBootstrapOptions != null) {
-                LOG.debug("Set Netty serverBootstrap options: " +
-                        nettyClientBootstrapOptions);
-                for(Map.Entry<ChannelOption, Object> entry : nettyClientBootstrapOptions.entrySet()) {
-                    bootstrap.option(entry.getKey(), entry.getValue());
-                }
-
-            }
+                    })
+            .option(ChannelOption.SO_BACKLOG, 128)
+            .childOption(ChannelOption.SO_KEEPALIVE, true);
+//            if (nettyClientBootstrapOptions != null) {
+//                LOG.debug("Set Netty serverBootstrap options: " +
+//                        nettyClientBootstrapOptions);
+//                for(Map.Entry<ChannelOption, Object> entry : nettyClientBootstrapOptions.entrySet()) {
+//                    bootstrap.option(entry.getKey(), entry.getValue());
+//                }
+//
+//            }
             ChannelFuture f = bootstrap.bind(addr).sync();
             serverChannel = f.channel();
             allChannels.add(serverChannel);
@@ -115,6 +117,16 @@ public class AvroNettyServer implements Server {
         future.awaitUninterruptibly();
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
+        if (businessGroup != null) {
+            businessGroup.shutdownGracefully();
+        }
+
+        closed.countDown();
+    }
+
+    public void closeChannel() {
+        ChannelGroupFuture future = allChannels.close();
+        future.awaitUninterruptibly();
         closed.countDown();
     }
 
