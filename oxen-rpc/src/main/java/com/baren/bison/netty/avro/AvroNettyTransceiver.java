@@ -84,7 +84,7 @@ public class AvroNettyTransceiver extends Transceiver {
      * @param addr the address to connect to.
      * @throws IOException if an error occurs connecting to the given address.
      */
-    public AvroNettyTransceiver(InetSocketAddress addr) throws IOException {
+    public AvroNettyTransceiver(InetSocketAddress addr) {
         this(addr, DEFAULT_CONNECTION_TIMEOUT_MILLIS);
     }
 
@@ -97,7 +97,7 @@ public class AvroNettyTransceiver extends Transceiver {
      * @throws IOException if an error occurs connecting to the given address.
      */
     public AvroNettyTransceiver(InetSocketAddress addr,
-                            int connectTimeoutMillis) throws IOException {
+                            int connectTimeoutMillis) {
         this(addr, new NioEventLoopGroup(),
                 connectTimeoutMillis);
     }
@@ -110,8 +110,7 @@ public class AvroNettyTransceiver extends Transceiver {
      * @param workerGroup the factory to use to create a new Netty Channel.
      * @throws IOException if an error occurs connecting to the given address.
      */
-    public AvroNettyTransceiver(InetSocketAddress addr, NioEventLoopGroup workerGroup)
-            throws IOException {
+    public AvroNettyTransceiver(InetSocketAddress addr, NioEventLoopGroup workerGroup) {
         this(addr, workerGroup, buildDefaultBootstrapOptions(null));
     }
 
@@ -125,7 +124,7 @@ public class AvroNettyTransceiver extends Transceiver {
      * @throws IOException if an error occurs connecting to the given address.
      */
     public AvroNettyTransceiver(InetSocketAddress addr, NioEventLoopGroup workerGroup,
-                            int connectTimeoutMillis) throws IOException {
+                            int connectTimeoutMillis) {
         this(addr, workerGroup,
                 buildDefaultBootstrapOptions(connectTimeoutMillis));
     }
@@ -144,7 +143,7 @@ public class AvroNettyTransceiver extends Transceiver {
      * @throws IOException if an error occurs connecting to the given address.
      */
     public AvroNettyTransceiver(InetSocketAddress addr, NioEventLoopGroup workerGroup,
-                                Map<ChannelOption, Object> nettyClientBootstrapOptions) throws IOException {
+                                Map<ChannelOption, Object> nettyClientBootstrapOptions) {
         if (workerGroup == null) {
             throw new NullPointerException("channelFactory is null");
         }
